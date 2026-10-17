@@ -1,0 +1,11 @@
+{
+  "mode": "smoke", "corpus_seed": 314159, "variants_per_family": 1,
+  "text_rows": 3500, "image_sides": [768, 1024],
+  "seeds": [42, 123, 2026], "segment_kib": [64],
+  "sampling_policies": ["interior", "start"], "interior_margin_bytes": 4096,
+  "max_segments_per_file": 2, "zlib_level": 6,
+  "rf": {"n_estimators": 100, "max_depth": 10, "min_samples_leaf": 1, "max_features": "sqrt", "class_weight": "balanced", "n_jobs": 4},
+  "score_threshold_candidates": [0.3, 0.4, 0.5, 0.6, 0.7],
+  "benchmark_segments": 64, "benchmark_warmup": 3, "benchmark_repeats": 3,
+  "notes": "12 procedural families, 60 files; variants and source formats share family groups. Synthetic-only smoke."
+}

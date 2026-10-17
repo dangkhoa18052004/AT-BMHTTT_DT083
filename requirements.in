@@ -1,0 +1,13 @@
+numpy
+pandas
+scipy
+scikit-learn
+cryptography
+Pillow
+reportlab
+matplotlib
+joblib
+psutil
+pytest
+openpyxl
+pypdf

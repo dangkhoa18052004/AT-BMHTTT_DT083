@@ -1,0 +1,11 @@
+{
+  "mode": "full", "corpus_seed": 314159, "variants_per_family": 6,
+  "text_rows": 10000, "image_sides": [768, 1024, 1280, 1536],
+  "seeds": [42, 123, 2026], "segment_kib": [64, 128, 256],
+  "sampling_policies": ["interior", "start"], "interior_margin_bytes": 4096,
+  "max_segments_per_file": 2, "zlib_level": 6,
+  "rf": {"n_estimators": 100, "max_depth": 10, "min_samples_leaf": 1, "max_features": "sqrt", "class_weight": "balanced", "n_jobs": 4},
+  "score_threshold_candidates": [0.3, 0.4, 0.5, 0.6, 0.7],
+  "benchmark_segments": 128, "benchmark_warmup": 3, "benchmark_repeats": 3,
+  "notes": "360 files but only 12 conservative template groups; NOT 360 independent real documents. Extension to 512/1024 KiB requires sufficient complete segments."
+}

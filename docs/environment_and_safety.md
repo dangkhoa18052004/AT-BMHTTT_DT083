@@ -1,0 +1,15 @@
+# Môi trường và ranh giới thao tác
+
+Workspace được khảo sát trước thay đổi: chỉ có bảng Excel đề tài, không có code hoặc AGENTS.md áp dụng tìm thấy tại workspace/các thư mục cha được kiểm tra. DT083 xác nhận từ hàng 83 sheet `160_DE_TAI`. Nội dung bảng Excel dùng để đối chiếu; yêu cầu thực thi lấy từ tệp văn bản người dùng chỉ định.
+
+Windows 11 build 26200; Python 3.12.7; CPU Intel Core i7-13650HX (đọc ProcessorNameString từ registry phần cứng), 14 physical cores (psutil), 20 logical threads; RAM 25.463.480.320 byte (~23,71 GiB), ghi bằng psutil; ổ E còn hơn 347 GB khi khảo sát. Truy vấn CIM CPU/RAM ban đầu bị từ chối; sau đó đọc tên CPU qua registry thành công. Runtime environment.json/benchmark_protocol.json ban đầu ghi identifier Intel64 Family6 Model183 Stepping1; results/hardware.json bổ sung tên thực và cores, không đoán.
+
+RF dùng 4 worker threads, I/O và feature extraction tuần tự. Benchmark perf_counter đo ba lần sau warm-up; batch tối đa128 cho full và64 cho smoke, subset là test IDs sort cố định; warm OS cache có thể tồn tại. Không khóa CPU frequency, tắt antivirus hoặc kiểm soát toàn bộ tải background. Biến động I/O và tạo thread pool có thể ảnh hưởng số đo. ms/segment và MiB/s được tính cho từng repeat rồi tổng hợp độc lập; hai mean không bắt buộc là nghịch đảo nhau. M2-minus-M1 bao gồm những thành phần đo khác nhau của pipeline, không phải profile loại trừ mọi overhead hệ điều hành.
+
+Môi trường `.venv` được tạo mới; global Python không đủ cryptography/reportlab ban đầu. Khởi tạo ensurepip/mạng trong sandbox bị chặn, sau đó cài qua quyền chạy ngoài sandbox. RF joblib threading tạo named pipe bị Windows sandbox từ chối; pytest tmp directories cũng gặp ACL. Các tests/thí nghiệm được chạy ngoài sandbox theo quyền cấp trong phiên; logic path confinement vẫn giới hạn corpus vào run, không quét dữ liệu cá nhân/hệ thống. Đã tạo thêm `.venv-repro` từ lock để kiểm tra tái lập; bằng chứng tests-fresh.xml và fresh_environment.json sau khi bước đó hoàn tất.
+
+Không tải/chạy malware. Các reference upstream tải là Python source/notebook/CSV để đọc, không chạy code hoặc eval dữ liệu upstream. AES chỉ tạo bản copy trong data/derived, nguồn được hash-check trước và sau. Mô hình load chỉ do dự án tạo. Corpus đọc/ghi được ràng buộc pathlib.resolve dưới root run; demo còn yêu cầu trong source/derived. Không thực hiện phản ứng trên tệp/process.
+
+Khóa AES mô phỏng lưu cục bộ để kiểm tra round-trip; bỏ khỏi submission. Không phải khóa production, không dùng lại cho một hệ thống thật. Package chỉ gồm code tự viết và artifact tự đo, không gồm reference/dataset nguyên bản upstream. License riêng của dữ liệu không tự chuyển thành giấy phép code.
+
+Full đã được khởi chạy trước khi rút gọn phép tính chọn threshold B0. Tiêu chí và ứng viên không đổi; audit cuối đã tính lại mọi threshold B0 chỉ từ train/validation và xác nhận khớp chính xác cấu hình lưu. Training/full wall time phản ánh lần chạy thực tế đó; lần chạy bằng code rút gọn có thể nhanh hơn. Không dùng metric test để chọn sự thay đổi này.
