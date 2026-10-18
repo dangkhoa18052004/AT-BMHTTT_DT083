@@ -1,10 +1,6 @@
 # Hướng dẫn chi tiết chạy chương trình DT083
 
-Tài liệu dành cho Windows và PowerShell, áp dụng cho dự án tại:
-
-```text
-E:\Project\AT&BMHTTT\DT083
-```
+Tài liệu dành cho Windows và PowerShell. Mở terminal tại thư mục gốc của repository trước khi chạy các lệnh bên dưới.
 
 Chương trình chạy bằng dòng lệnh. Nó đọc các đoạn byte trong corpus của dự án, tính đặc trưng và dự đoán **compressed** hoặc **encrypted**. Kết quả hiển thị trong terminal và lưu thành JSON, CSV, hình PNG, model. Nhãn encrypted không chứng minh tệp là ransomware.
 
@@ -19,7 +15,7 @@ Chương trình chạy bằng dòng lệnh. Nó đọc các đoạn byte trong c
 | Xem bảng kết quả, hình và phân tích lỗi | 8 | Không |
 | Cài trên máy khác hoặc dùng gói ZIP | 4 và 12 | Cần sinh lại corpus để chạy demo |
 
-**Để bắt đầu trên máy này: làm phần 2, rồi sao chép lệnh ở phần 3.**
+**Để bắt đầu: làm phần 2, rồi sao chép lệnh ở phần 3.**
 
 Các khối `powershell` dưới đây là lệnh để chạy. Chỉ sao chép nội dung trong khối; không gõ thêm ký hiệu dấu nhắc `PS ...>` hoặc các dòng đánh dấu khối lệnh.
 
@@ -32,14 +28,14 @@ Bạn có thể dùng một trong hai cách:
 - Mở Windows Terminal và chọn tab PowerShell.
 - Mở thư mục `DT083` trong VS Code, chọn **Terminal → New Terminal**, rồi chọn PowerShell.
 
-Trong terminal, chạy:
+Trong terminal, chuyển đến thư mục gốc của repository. Thay `<repository-path>` bằng đường dẫn trên máy của bạn:
 
 ```powershell
-Set-Location -LiteralPath 'E:\Project\AT&BMHTTT\DT083'
+Set-Location -LiteralPath '<repository-path>'
 Get-Location
 ```
 
-`Get-Location` cần hiển thị thư mục `DT083`. Đường dẫn có ký tự `&`, nên giữ nguyên dấu nháy đơn khi dùng lệnh trên.
+`Get-Location` cần hiển thị thư mục gốc của repository. Dấu nháy giúp đường dẫn có dấu cách hoặc ký tự đặc biệt được xử lý đúng.
 
 Kiểm tra các thành phần cần thiết:
 
@@ -50,7 +46,7 @@ Test-Path -LiteralPath '.\runs\full\models\42_64_interior_M2.joblib'
 Test-Path -LiteralPath '.\runs\full\data\derived\waves_01_png__aesgcm.bin'
 ```
 
-Trên workspace đã xây dựng, cả bốn dòng cần trả về `True`. Nếu môi trường `.venv` chưa có, làm phần 4. Nếu dữ liệu/model chưa có, làm phần 5 hoặc 6 trước khi demo, rồi dùng tên run vừa tạo.
+Nếu các tệp cần thiết chưa có, làm phần 4, 5 hoặc 6 trước khi demo, rồi dùng tên run vừa tạo.
 
 Kiểm tra Python của dự án:
 
@@ -260,7 +256,7 @@ Lần full đã đo trên máy này mất khoảng **31 phút**, bao gồm sinh 
 Không đóng terminal khi đang chạy. Theo dõi log từ **một cửa sổ PowerShell khác**, thay `<ten-run>` bằng tên run thực tế:
 
 ```powershell
-Get-Content -Encoding UTF8 -LiteralPath 'E:\Project\AT&BMHTTT\DT083\runs\<ten-run>\results\run.log' -Tail 20 -Wait
+Get-Content -Encoding UTF8 -LiteralPath '.\runs\<ten-run>\results\run.log' -Tail 20 -Wait
 ```
 
 `Ctrl+C` trong cửa sổ theo dõi sẽ dừng theo dõi log. `Ctrl+C` trong cửa sổ chạy pipeline sẽ ngắt thí nghiệm; xem phần 10 để xử lý.
@@ -410,7 +406,7 @@ $testTemp = 'results/pytest-user-' + (Get-Date -Format 'yyyyMMdd-HHmmss')
 .\.venv\Scripts\python.exe -X utf8 -m pytest -q --tb=short -p no:cacheprovider --junitxml=results/tests-user.xml --basetemp $testTemp
 ```
 
-Tên thư mục tạm mới giúp tránh đụng các thư mục test cũ. `-p no:cacheprovider` tắt cache pytest để giảm lỗi ACL cache đã gặp trong sandbox.
+Tên thư mục tạm mới giúp tránh xung đột với thư mục test cũ. `-p no:cacheprovider` tắt cache pytest.
 
 Bộ kiểm thử hiện có 28 tests, bao gồm công thức feature, dữ liệu rỗng/ngắn/hỏng, round-trip, group/content leakage, feature allowlist, source integrity, lựa chọn threshold và pipeline tích hợp. Lần xây dựng đã đạt **28 passed** ở cả môi trường chính và môi trường mới từ lock. Kết quả lần bạn chạy sẽ nằm trong `results/tests-user.xml`.
 
@@ -429,7 +425,7 @@ Bộ kiểm thử hiện có 28 tests, bao gồm công thức feature, dữ li�
 | `Demo accepts only files...` | Chọn file ngoài source/derived, ví dụ results hoặc config | Chọn corpus file trong `data/source` hoặc `data/derived` |
 | `status: too_small` | Không đủ một đoạn và margin | Chọn tệp lớn hơn hoặc cỡ nhỏ hơn đã có model; không padding tệp |
 | `Source was changed` hoặc `Changed/corrupt derived content` | Corpus bị thay đổi sau khi ghi checksum | Giữ lại log để kiểm tra; tạo run mới hoặc khôi phục bản có checksum đúng |
-| `WinError 5: Access is denied` | Sandbox, quyền thư mục tạm hoặc named pipe joblib | Chạy trong PowerShell thông thường; kiểm tra quyền thư mục dự án và dùng thư mục temp mới |
+| `WinError 5: Access is denied` | Quyền thư mục tạm hoặc named pipe joblib | Kiểm tra quyền thư mục dự án và dùng thư mục temp mới |
 | Lỗi mạng khi pip/download | Không kết nối được nguồn tải | Kiểm tra mạng; corpus tự tạo không cần tải reference nếu thư viện đã cài |
 | Chạy lâu nhưng chưa thấy kết quả cuối | Đang nén/trích feature/train | Xem `run.log`; các CSV/hình tổng hợp chỉ xuất khi các bước tương ứng kết thúc |
 

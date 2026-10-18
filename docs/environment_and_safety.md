@@ -1,15 +1,21 @@
-# Môi trường và ranh giới thao tác
+# Môi trường và ranh giới an toàn
 
-Workspace được khảo sát trước thay đổi: chỉ có bảng Excel đề tài, không có code hoặc AGENTS.md áp dụng tìm thấy tại workspace/các thư mục cha được kiểm tra. DT083 xác nhận từ hàng 83 sheet `160_DE_TAI`. Nội dung bảng Excel dùng để đối chiếu; yêu cầu thực thi lấy từ tệp văn bản người dùng chỉ định.
+## Môi trường tái lập
 
-Windows 11 build 26200; Python 3.12.7; CPU Intel Core i7-13650HX (đọc ProcessorNameString từ registry phần cứng), 14 physical cores (psutil), 20 logical threads; RAM 25.463.480.320 byte (~23,71 GiB), ghi bằng psutil; ổ E còn hơn 347 GB khi khảo sát. Truy vấn CIM CPU/RAM ban đầu bị từ chối; sau đó đọc tên CPU qua registry thành công. Runtime environment.json/benchmark_protocol.json ban đầu ghi identifier Intel64 Family6 Model183 Stepping1; results/hardware.json bổ sung tên thực và cores, không đoán.
+Dự án yêu cầu Python 3.12 trở lên. Cài đặt từ `requirements-lock.txt` để dùng các phiên bản phụ thuộc đã khóa. Cấu hình benchmark, số lần lặp và warm-up được khai báo cùng cấu hình thí nghiệm hoặc artifact của lần chạy.
 
-RF dùng 4 worker threads, I/O và feature extraction tuần tự. Benchmark perf_counter đo ba lần sau warm-up; batch tối đa128 cho full và64 cho smoke, subset là test IDs sort cố định; warm OS cache có thể tồn tại. Không khóa CPU frequency, tắt antivirus hoặc kiểm soát toàn bộ tải background. Biến động I/O và tạo thread pool có thể ảnh hưởng số đo. ms/segment và MiB/s được tính cho từng repeat rồi tổng hợp độc lập; hai mean không bắt buộc là nghịch đảo nhau. M2-minus-M1 bao gồm những thành phần đo khác nhau của pipeline, không phải profile loại trừ mọi overhead hệ điều hành.
+Thời gian xử lý phụ thuộc vào phần cứng, tải hệ thống, bộ nhớ đệm và hoạt động I/O. Kết quả benchmark phù hợp để so sánh các biến thể trong cùng quy trình đo; không nên diễn giải như cam kết hiệu năng trên thiết bị khác. Thời gian chạy toàn pipeline và độ trễ xử lý từng đoạn là các phép đo khác nhau.
 
-Môi trường `.venv` được tạo mới; global Python không đủ cryptography/reportlab ban đầu. Khởi tạo ensurepip/mạng trong sandbox bị chặn, sau đó cài qua quyền chạy ngoài sandbox. RF joblib threading tạo named pipe bị Windows sandbox từ chối; pytest tmp directories cũng gặp ACL. Các tests/thí nghiệm được chạy ngoài sandbox theo quyền cấp trong phiên; logic path confinement vẫn giới hạn corpus vào run, không quét dữ liệu cá nhân/hệ thống. Đã tạo thêm `.venv-repro` từ lock để kiểm tra tái lập; bằng chứng tests-fresh.xml và fresh_environment.json sau khi bước đó hoàn tất.
+## An toàn dữ liệu
 
-Không tải/chạy malware. Các reference upstream tải là Python source/notebook/CSV để đọc, không chạy code hoặc eval dữ liệu upstream. AES chỉ tạo bản copy trong data/derived, nguồn được hash-check trước và sau. Mô hình load chỉ do dự án tạo. Corpus đọc/ghi được ràng buộc pathlib.resolve dưới root run; demo còn yêu cầu trong source/derived. Không thực hiện phản ứng trên tệp/process.
+- Không tải hoặc thực thi malware; không quét máy, sửa/xóa tệp ngoài corpus hay dừng tiến trình.
+- Corpus được tạo tổng hợp. Phép biến đổi mã hóa chỉ nhằm kiểm tra pipeline; khóa sinh ra không phải khóa sản xuất và không được chia sẻ hoặc tái sử dụng.
+- Các tài liệu tham khảo bên ngoài chỉ được xử lý theo đúng phạm vi đã mô tả trong từng quy trình. Không thực thi notebook hoặc đánh giá mã được nhúng trong dữ liệu tham khảo.
+- Đường dẫn đầu vào demo được giới hạn trong thư mục dữ liệu của lần chạy. Chỉ nạp model `joblib` do dự án tạo; định dạng này không an toàn khi nhận tệp từ nguồn không tin cậy.
+- Dữ liệu, model, khóa mô phỏng, log và artifact của từng lần chạy là đầu ra cục bộ, không thuộc source control mặc định.
 
-Khóa AES mô phỏng lưu cục bộ để kiểm tra round-trip; bỏ khỏi submission. Không phải khóa production, không dùng lại cho một hệ thống thật. Package chỉ gồm code tự viết và artifact tự đo, không gồm reference/dataset nguyên bản upstream. License riêng của dữ liệu không tự chuyển thành giấy phép code.
+## Diễn giải và quyền sử dụng
 
-Full đã được khởi chạy trước khi rút gọn phép tính chọn threshold B0. Tiêu chí và ứng viên không đổi; audit cuối đã tính lại mọi threshold B0 chỉ từ train/validation và xác nhận khớp chính xác cấu hình lưu. Training/full wall time phản ánh lần chạy thực tế đó; lần chạy bằng code rút gọn có thể nhanh hơn. Không dùng metric test để chọn sự thay đổi này.
+Nhãn của thí nghiệm là đoạn đã nén hoặc đã mã hóa mô phỏng; kết quả không phải tỷ lệ phát hiện ransomware. Số mẫu biến thể không đồng nghĩa với số nguồn độc lập. Xem [dataset card](dataset_card.md) và [quy trình nghiên cứu](research_protocol.md) trước khi diễn giải kết quả.
+
+Quyền sử dụng mã nguồn, bài báo và dữ liệu bên thứ ba cần được xác minh riêng. Metadata hoặc giấy phép của một nguồn không tự động áp dụng cho các nguồn khác.

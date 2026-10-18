@@ -1,9 +1,18 @@
 .venv*/
 __pycache__/
 .pytest_cache/
-references/author/
-references/paper.pdf
-data/source/
-data/derived/
-models/
+pytest-cache-files-*/
 *.egg-info/
+
+# Generated experiment data, models, local reports, and downloaded references
+/runs/
+/results/
+/data/source/
+/data/derived/
+/data/features/
+/data/manifests/
+/references/
+/models/
+
+# Local audit notes
+/KIEM_TRA_REPO_TAC_GIA.md
